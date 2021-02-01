@@ -16,7 +16,7 @@ remind;Hydrogen;SE|Electricity|Hydrogen
 remind;Nuclear;SE|Electricity|Nuclear
 remind;Oil ST;SE|Electricity|Oil|w/o CCS
 remind;Solar CSP;SE|Electricity|Solar|CSP
-remind;Solar PV Centralized;SE|Electricity|Solar|PV
+remind;Solar PV;SE|Electricity|Solar|PV
 remind;Wind Offshore;SE|Electricity|Wind
 image;Biomass CHP;Secondary Energy|Electricity|Biomass|w/o CCS|3
 image;Biomass CHP CCS;Secondary Energy|Electricity|Biomass|w/ CCS|2

@@ -305,6 +305,7 @@ class InventorySet:
                 "electricity production, solar tower power plant, 20 MW",
             ]
         },
+        "Solar PV": {"fltr": "electricity production, photovoltaic"},
         "Solar PV Centralized": {"fltr": "electricity production, photovoltaic, 570kWp"},
         "Solar PV Residential": {"fltr": "electricity production, photovoltaic, 3kWp"},
         "Wind Onshore": {"fltr": ["electricity production, wind, <1MW turbine, onshore",
