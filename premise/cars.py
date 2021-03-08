@@ -232,7 +232,8 @@ class Cars:
                 pass
 
     def update_cars(self):
-        self.link_local_electricity_supply()
+        if self.year > 2024:
+            self.link_local_electricity_supply()
         self.link_local_liquid_fuel_markets()
 
         return self.db

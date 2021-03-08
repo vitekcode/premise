@@ -586,7 +586,15 @@ class Steel:
                                                                                       variables='Production|Industry|Steel|Secondary').values)\
                                     * 1000 / 3.6
 
+                    sply = ws.get_many(
+                        self.db,
+                        ws.equals("name", "market group for electricity, medium voltage"),
+                        ws.equals("location", k))
 
+                    if(len(list(sply))) == 1:
+                        my_location = k
+                    else:
+                        my_location = "ENTSO-E"
                     # Add electricity exchange
                     d_act_steel[d][k]['exchanges'].append({
                                     "uncertainty type": 0,
@@ -597,7 +605,7 @@ class Steel:
                                     "product": 'electricity, medium voltage',
                                     "name": 'market group for electricity, medium voltage',
                                     "unit": 'kilowatt hour',
-                                    "location": k,
+                                    "location": my_location,
                                 })
 
                     # Relink all activities to the newly created activities
