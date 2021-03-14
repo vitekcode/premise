@@ -23,10 +23,9 @@ def package_files(directory):
             paths.append(os.path.join('..', path, filename))
     return paths
 
-
 setup(
     name='premise',
-    version="0.2.0",
+    version="0.2.1",
     packages=packages,
     author="Alois Dirnaichner <dirnaichner@pik-potsdam.de>, Chris Mutel <chris.mutel@psi.ch>, Tom Terlouw <tom.terlouw@psi.ch>, Romain Sacchi <romain.sacchi@psi.ch>",
     license=open('LICENSE').read(),
