@@ -28,6 +28,7 @@ from pathlib import Path
 import copy
 import os
 import contextlib
+import pickle
 
 
 FILEPATH_CARMA_INVENTORIES = INVENTORY_DIR / "lci-Carma-CCS.xlsx"
@@ -87,6 +88,9 @@ FILEPATH_METHANOL_FROM_NATGAS_FUELS_INVENTORIES = (
     INVENTORY_DIR / "lci-synfuels-from-methanol-from-natural-gas.xlsx"
 )
 FILEPATH_VARIOUS_VEHICLES = INVENTORY_DIR / "lci-various_vehicles.xlsx"
+FILE_PATH_INVENTORIES_EI_37 = INVENTORY_DIR / "inventory_data_ei_37.pickle"
+FILE_PATH_INVENTORIES_EI_36 = INVENTORY_DIR / "inventory_data_ei_36.pickle"
+FILE_PATH_INVENTORIES_EI_35 = INVENTORY_DIR / "inventory_data_ei_35.pickle"
 
 SUPPORTED_EI_VERSIONS = ["3.5", "3.6", "3.7", "3.7.1"]
 SUPPORTED_MODELS = ["remind", "image", "static"]
@@ -252,7 +256,7 @@ def check_fleet(fleet, model, vehicle_type):
         )
 
         fleet["fleet file"] = (
-            DATA_DIR / "iam_output_files" / "fleet files" / model / vehicle_type / "fleet_file.csv"
+            DATA_DIR / "iam_output_files" / "fleet_files" / model / vehicle_type / "fleet_file.csv"
         )
     else:
         filepath = fleet["fleet file"]
@@ -270,20 +274,20 @@ def check_fleet(fleet, model, vehicle_type):
             if not set(fleet["regions"]).issubset(LIST_REMIND_REGIONS):
                 raise ValueError(
                     "One or several regions specified for the fleet "
-                    "of passenger cars is invalid."
+                    "of passenger_cars is invalid."
                 )
 
         if model == "image":
             if not set(fleet["regions"]).issubset(LIST_IMAGE_REGIONS):
                 raise ValueError(
                     "One or several regions specified for the fleet "
-                    "of passenger cars is invalid."
+                    "of passenger_cars is invalid."
                 )
     else:
         if model == "remind":
-            fleet["regions"] = [r for r in LIST_REMIND_REGIONS if r != "World"]
+            fleet["regions"] = LIST_REMIND_REGIONS
         if model == "image":
-            fleet["regions"] = [r for r in LIST_IMAGE_REGIONS if r != "World"]
+            fleet["regions"] = LIST_IMAGE_REGIONS
 
     if "filters" not in fleet:
         fleet["filters"] = None
@@ -357,12 +361,12 @@ def check_scenarios(scenario):
     if "exclude" in scenario:
         scenario["exclude"] = check_exclude(scenario["exclude"])
 
-    if "passenger cars" in scenario:
-        scenario["passenger cars"] = check_fleet(
-            scenario["passenger cars"], scenario["model"], "passenger cars"
+    if "passenger_cars" in scenario:
+        scenario["passenger_cars"] = check_fleet(
+            scenario["passenger_cars"], scenario["model"], "passenger_cars"
         )
     else:
-        scenario["passenger cars"] = False
+        scenario["passenger_cars"] = False
 
     if "trucks" in scenario:
         scenario["trucks"] = check_fleet(
@@ -394,7 +398,8 @@ class NewDatabase:
         source_version="3.7.1",
         source_type="brightway",
         source_file_path=None,
-        additional_inventories=None
+        additional_inventories=None,
+        direct_import=True
     ):
 
         self.source = source_db
@@ -420,7 +425,7 @@ class NewDatabase:
         print(
             "\n/////////////////// IMPORTING DEFAULT INVENTORIES ////////////////////"
         )
-        self.import_inventories()
+        self.import_inventories(direct_import)
 
         for scenario in self.scenarios:
             scenario["external data"] = IAMDataCollection(
@@ -441,18 +446,32 @@ class NewDatabase:
             self.source, self.source_type, self.source_file_path
         ).prepare_datasets()
 
-    def import_inventories(self):
+    def import_inventories(self, direct_import):
         """
         This method will trigger the import of a number of inventories
         and merge them into the database dictionary.
-        If `add_passenger_cars` and `add_trucks` have been set to `True`,
-        or if they have been passed as dictionaries, corresponding inventories will be
-        imported as well, otherwise, they will not.
         """
 
         print("Importing necessary inventories...\n")
-        with open(os.devnull, "w") as f, contextlib.redirect_stdout(f):
-            # Add Carma CCS inventories
+
+        if direct_import:
+
+            # we unpickle inventories here
+            # and append them directly to the end of the database
+
+            if self.version in ["3.7", "3.7.1"]:
+                fp = FILE_PATH_INVENTORIES_EI_37
+            elif self.version == "3.6":
+                fp = FILE_PATH_INVENTORIES_EI_36
+            else:
+                fp = FILE_PATH_INVENTORIES_EI_35
+
+            with open(fp, 'rb') as handle:
+                data = pickle.load(handle)
+                self.db.extend(data)
+
+        else:
+            # Manual import
             for file in (FILEPATH_CARMA_INVENTORIES, FILEPATH_CHP_INVENTORIES):
                 carma = CarmaCCSInventory(self.db, self.version, file)
                 carma.merge_inventory()
@@ -610,19 +629,19 @@ class NewDatabase:
         for scenario in self.scenarios:
             if "exclude" not in scenario or "update_cars" not in scenario["exclude"]:
 
-                if scenario["passenger cars"]:
+                if scenario["passenger_cars"]:
 
                     # Import `carculator` inventories if wanted
                     cars = CarculatorInventory(
                         database=scenario["database"],
                         version=self.version,
                         path=scenario["filepath"],
-                        fleet_file=scenario["passenger cars"]["fleet file"],
+                        fleet_file=scenario["passenger_cars"]["fleet file"],
                         model=scenario["model"],
                         pathway=scenario["pathway"],
                         year=scenario["year"],
-                        regions=scenario["passenger cars"]["regions"],
-                        filters=scenario["passenger cars"]["filters"],
+                        regions=scenario["passenger_cars"]["regions"],
+                        filters=scenario["passenger_cars"]["filters"],
                     )
                     scenario["database"] = cars.merge_inventory()
 
