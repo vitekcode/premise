@@ -394,6 +394,10 @@ class IAMDataCollection:
                 market_shares.loc[dict(region=region)].values[market_shares.loc[dict(region=region)].values < 0] = 0
                 market_shares.loc[dict(region=region)] /= market_shares.loc[dict(region=region)].sum(dim="variables")
 
+            # multiply by volumes at T0
+            market_shares.loc[dict(region=region)] *= data.sel(region=region, year=self.year)
+            market_shares.loc[dict(region=region)] /= market_shares.loc[dict(region=region)].sum(dim="variables")
+
         return market_shares
 
     def get_iam_electricity_markets(self, drop_hydrogen=True):

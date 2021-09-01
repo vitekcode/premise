@@ -440,7 +440,8 @@ def check_system_model(system_model):
         raise TypeError("The argument `system_model` must be a string"
                         "('attributional', 'consequential').")
 
-    if system_model not in ("attribution", "consequential"):
+
+    if system_model not in ("attributional", "consequential"):
         raise ValueError("The argument `system_model` must be one of the two values:"
                         "'attributional', 'consequential'.")
 
