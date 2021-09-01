@@ -451,8 +451,8 @@ def check_time_horizon(th):
 
     if th is None:
         print("`time_horizon`, used to identify marginal suppliers, is not specified. "
-              "It is therefore set to 30 years.")
-        th = 30
+              "It is therefore set to 20 years.")
+        th = 20
 
     try:
         int(th)
